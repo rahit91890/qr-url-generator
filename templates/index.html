@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QR Code & URL Shortener</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .container {
+            max-width: 900px;
+            width: 100%;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        .header h1 {
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+        .header p {
+            opacity: 0.9;
+        }
+        .tabs {
+            display: flex;
+            background: #f8f9fa;
+            border-bottom: 2px solid #dee2e6;
+        }
+        .tab {
+            flex: 1;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            font-weight: 600;
+            color: #6c757d;
+            transition: all 0.3s;
+            border: none;
+            background: transparent;
+            font-size: 1rem;
+        }
+        .tab:hover {
+            background: #e9ecef;
+        }
+        .tab.active {
+            background: white;
+            color: #667eea;
+            border-bottom: 3px solid #667eea;
+        }
+        .tab-content {
+            padding: 40px;
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        .input-group {
+            margin-bottom: 20px;
+        }
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #495057;
+            font-weight: 500;
+        }
+        .input-group input, .input-group textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+        .input-group input:focus, .input-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        .input-group textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+            width: 100%;
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        .result {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            display: none;
+        }
+        .result.show {
+            display: block;
+        }
+        .qr-image {
+            text-align: center;
+            margin: 20px 0;
+        }
+        .qr-image img {
+            max-width: 300px;
+            border: 5px solid white;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            border-radius: 8px;
+        }
+        .download-btn {
+            background: #28a745;
+            margin-top: 15px;
+        }
+        .download-btn:hover {
+            background: #218838;
+        }
+        .short-url {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            border: 2px solid #667eea;
+            margin-top: 15px;
+            word-break: break-all;
+        }
+        .copy-btn {
+            background: #17a2b8;
+            margin-top: 10px;
+        }
+        .copy-btn:hover {
+            background: #138496;
+        }
+        .error {
+            color: #dc3545;
+            margin-top: 10px;
+            padding: 10px;
+            background: #f8d7da;
+            border-radius: 5px;
+            display: none;
+        }
+        .error.show {
+            display: block;
+        }
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.5rem;
+            }
+            .tab {
+                padding: 15px 10px;
+                font-size: 0.9rem;
+            }
+            .tab-content {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔗 QR & URL Generator</h1>
+            <p>Generate QR codes and shorten URLs with ease</p>
+        </div>
+        
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('qr')">Generate QR Code</button>
+            <button class="tab" onclick="switchTab('url')">Shorten URL</button>
+        </div>
+        
+        <div id="qr-tab" class="tab-content active">
+            <div class="input-group">
+                <label for="qr-text">Enter Text or URL</label>
+                <textarea id="qr-text" placeholder="Enter any text or URL to generate QR code..."></textarea>
+            </div>
+            <button class="btn" onclick="generateQR()">Generate QR Code</button>
+            <div class="error" id="qr-error"></div>
+            <div class="result" id="qr-result">
+                <div class="qr-image">
+                    <img id="qr-img" src="" alt="QR Code">
+                </div>
+                <button class="btn download-btn" onclick="downloadQR()">Download QR Code</button>
+            </div>
+        </div>
+        
+        <div id="url-tab" class="tab-content">
+            <div class="input-group">
+                <label for="long-url">Enter URL to Shorten</label>
+                <input type="url" id="long-url" placeholder="https://example.com/very-long-url">
+            </div>
+            <button class="btn" onclick="shortenURL()">Shorten URL</button>
+            <div class="error" id="url-error"></div>
+            <div class="result" id="url-result">
+                <h3>Shortened URL:</h3>
+                <div class="short-url" id="short-url-display"></div>
+                <button class="btn copy-btn" onclick="copyURL()">Copy to Clipboard</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function switchTab(tab) {
+            const tabs = document.querySelectorAll('.tab');
+            const contents = document.querySelectorAll('.tab-content');
+            
+            tabs.forEach(t => t.classList.remove('active'));
+            contents.forEach(c => c.classList.remove('active'));
+            
+            if (tab === 'qr') {
+                tabs[0].classList.add('active');
+                document.getElementById('qr-tab').classList.add('active');
+            } else {
+                tabs[1].classList.add('active');
+                document.getElementById('url-tab').classList.add('active');
+            }
+        }
+
+        async function generateQR() {
+            const text = document.getElementById('qr-text').value;
+            const errorEl = document.getElementById('qr-error');
+            const resultEl = document.getElementById('qr-result');
+            
+            errorEl.classList.remove('show');
+            resultEl.classList.remove('show');
+            
+            if (!text) {
+                errorEl.textContent = 'Please enter text or URL';
+                errorEl.classList.add('show');
+                return;
+            }
+            
+            try {
+                const response = await fetch('/generate-qr', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ text: text })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    document.getElementById('qr-img').src = data.image;
+                    resultEl.classList.add('show');
+                } else {
+                    errorEl.textContent = data.error || 'Failed to generate QR code';
+                    errorEl.classList.add('show');
+                }
+            } catch (error) {
+                errorEl.textContent = 'Error: ' + error.message;
+                errorEl.classList.add('show');
+            }
+        }
+
+        function downloadQR() {
+            const img = document.getElementById('qr-img');
+            const link = document.createElement('a');
+            link.href = img.src;
+            link.download = 'qrcode.png';
+            link.click();
+        }
+
+        async function shortenURL() {
+            const url = document.getElementById('long-url').value;
+            const errorEl = document.getElementById('url-error');
+            const resultEl = document.getElementById('url-result');
+            
+            errorEl.classList.remove('show');
+            resultEl.classList.remove('show');
+            
+            if (!url) {
+                errorEl.textContent = 'Please enter a URL';
+                errorEl.classList.add('show');
+                return;
+            }
+            
+            try {
+                const response = await fetch('/shorten-url', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ url: url })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    document.getElementById('short-url-display').textContent = data.short_url;
+                    resultEl.classList.add('show');
+                } else {
+                    errorEl.textContent = data.error || 'Failed to shorten URL';
+                    errorEl.classList.add('show');
+                }
+            } catch (error) {
+                errorEl.textContent = 'Error: ' + error.message;
+                errorEl.classList.add('show');
+            }
+        }
+
+        function copyURL() {
+            const urlText = document.getElementById('short-url-display').textContent;
+            navigator.clipboard.writeText(urlText).then(() => {
+                const btn = event.target;
+                const originalText = btn.textContent;
+                btn.textContent = 'Copied!';
+                setTimeout(() => {
+                    btn.textContent = originalText;
+                }, 2000);
+            });
+        }
+    </script>
+</body>
+</html>
